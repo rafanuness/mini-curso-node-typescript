@@ -2,6 +2,7 @@ import { response, Router } from 'express';
 import knex from '../database/connection';
 import multer from 'multer';
 import multerConfig from '../config/multer';
+import {celebrate, Joi} from 'celebrate';
 
 const locationsRouter = Router();
 
@@ -55,7 +56,21 @@ locationsRouter.get('/:id', async (req,res) => {
     return res.json({location, items});
 })
 
-locationsRouter.post('/', async (req,res) => {
+locationsRouter.post('/',celebrate({
+    body: Joi.object().keys({
+        name: Joi.string().required(),
+        email: Joi.string().required().email(),
+        whatsapp: Joi.string().required(),
+        latitude: Joi.number().required(),
+        longitude: Joi.number().required(),
+        city: Joi.string().required(),
+        uf: Joi.string().required(),
+        items: Joi.array().items(Joi.number()).required(),
+
+    })
+},{
+    abortEarly: false
+}),async (req,res) => {
     const { 
         name,
         email,
