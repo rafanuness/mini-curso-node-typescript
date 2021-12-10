@@ -1,6 +1,9 @@
 import { response, Router } from 'express';
 import { compare } from 'bcryptjs';
 import knex from '../database/connection';
+import { sign } from 'jsonwebtoken';
+import authConfig from '../config/auth';
+import auth from '../config/auth';
 
 const sessionsRouter = Router();
 
@@ -15,13 +18,18 @@ sessionsRouter.post('/', async (req, res) => {
     return res.status(400).json({message: 'Credenciais incorretas!'});
  }
 
- const comparePassword = compare(password, user.password);
+ const comparePassword = await compare(password, user.password);
 
  if (!comparePassword){
     return res.status(400).json({message: 'Credenciais incorretas!'});
  }
 
- return res.json(user);
+ const token = sign( {name: user.name} , authConfig.jwt.secret , {
+     subject: user.id.toString(),
+     expiresIn: authConfig.jwt.expiresIn
+ });
+
+ return res.json({user, token});
 });
 
 sessionsRouter.delete('/:email', async (req, res) => {
